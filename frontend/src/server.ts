@@ -5,12 +5,30 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+/**
+ * Proxy das chamadas de API/auth para o backend Spring quando rodando
+ * em container (mesma origem para o browser → resolve cookie + CORS).
+ * Em `ng serve` dev isto não roda; lá vale o proxy.conf.json.
+ */
+const apiTarget = process.env['API_PROXY_TARGET'] ?? 'http://api:8080';
+app.use(
+  createProxyMiddleware({
+    target: apiTarget,
+    changeOrigin: true,
+    // /auth/discord/callback é rota do Angular (SPA), não da api.
+    pathFilter: (path: string) =>
+      path.startsWith('/api/') ||
+      (path.startsWith('/auth/') && !path.startsWith('/auth/discord/callback')),
+  }),
+);
 
 /**
  * Example Express Rest API endpoints can be defined here.
