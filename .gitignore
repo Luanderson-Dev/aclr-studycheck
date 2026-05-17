@@ -95,3 +95,6 @@ Thumbs.db
 # Misc
 # =========================================================
 HELP.md
+
+# Angular build cache/artifacts
+frontend/.angular/
