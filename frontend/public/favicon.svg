@@ -6,10 +6,11 @@
     </linearGradient>
   </defs>
   <rect width="64" height="64" rx="14" fill="url(#g)"/>
-  <g fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M32 20 L50 28 L32 36 L14 28 Z"/>
-    <path d="M32 36 L44 30.7 a16 16 0 0 1 1.6 8.3 c0 2.6 -.7 5 -1.8 7.2"/>
-    <path d="M32 36 L32 49"/>
-    <path d="M21 31.5 v9 c0 2.2 5 5.5 11 5.5 s11 -3.3 11 -5.5 v-9"/>
-  </g>
+  <!-- Capelo: topo (losango) -->
+  <path d="M32 16 L57 27 L32 38 L7 27 Z" fill="#fff"/>
+  <!-- Base do capelo -->
+  <path d="M16 32 L16 42 C16 47 23 51 32 51 C41 51 48 47 48 42 L48 32 L32 39 Z" fill="#fff"/>
+  <!-- Cordão + borla -->
+  <path d="M55 26 L55 41" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="55" cy="44" r="3.5" fill="#fff"/>
 </svg>
