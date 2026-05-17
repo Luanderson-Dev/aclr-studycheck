@@ -67,7 +67,10 @@ import { StreakResponse, StudySessionResponse } from '../../core/models/session.
           <p class="text-sm text-gray-500 mb-5">{{ dataAtual() }}</p>
           @if (sessaoAberta()) {
             <div class="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded mb-4 text-sm">
-              Sessão aberta desde {{ startedAtAberta() | date:'HH:mm:ss' }}
+              <div class="text-2xl font-mono font-bold">{{ tempoSessaoAtual() }}</div>
+              <div class="text-xs text-green-600 mt-1">
+                Sessão aberta desde {{ startedAtAberta() | date:'HH:mm:ss' }}
+              </div>
             </div>
           } @else {
             <div class="bg-gray-50 border border-gray-200 text-gray-500 px-3 py-2 rounded mb-4 text-sm">
@@ -107,27 +110,60 @@ export class Dashboard implements OnInit, OnDestroy {
   readonly carregando = signal(true);
   readonly horaAtual = signal('');
   readonly dataAtual = signal('');
+  readonly agora = signal(Date.now());
 
-  readonly totalMinutos = computed(() =>
-    this.registros().reduce((acc, r) => acc + r.minutosEstudados, 0),
+  private readonly segundosSessaoAtual = computed(() => {
+    if (!this.sessaoAberta()) return 0;
+    const inicio = this.startedAtAberta();
+    if (!inicio) return 0;
+    const diff = Math.floor((this.agora() - new Date(inicio).getTime()) / 1000);
+    return diff > 0 ? diff : 0;
+  });
+
+  readonly tempoSessaoAtual = computed(() => {
+    const total = this.segundosSessaoAtual();
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  });
+
+  readonly totalMinutos = computed(
+    () =>
+      this.registros().reduce((acc, r) => acc + r.minutosEstudados, 0) +
+      Math.floor(this.segundosSessaoAtual() / 60),
   );
 
   private intervalo: ReturnType<typeof setInterval> | null = null;
+  private pollIntervalo: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.atualizarRelogio();
       this.intervalo = setInterval(() => this.atualizarRelogio(), 1000);
+      this.pollIntervalo = setInterval(() => this.sincronizarBackend(), 15000);
     }
     this.carregarEstado();
     this.carregarRegistros();
-    this.sessionService.streak().subscribe({
-      next: (s) => this.streak.set(s),
-    });
+    this.carregarStreak();
   }
 
   ngOnDestroy(): void {
     if (this.intervalo) clearInterval(this.intervalo);
+    if (this.pollIntervalo) clearInterval(this.pollIntervalo);
+  }
+
+  private sincronizarBackend(): void {
+    this.carregarEstado();
+    this.carregarRegistros();
+    this.carregarStreak();
+  }
+
+  private carregarStreak(): void {
+    this.sessionService.streak().subscribe({
+      next: (s) => this.streak.set(s),
+    });
   }
 
   formatarHoras(minutos: number): string {
@@ -146,7 +182,6 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private carregarRegistros(): void {
-    this.carregando.set(true);
     this.sessionService.listarMinhas().subscribe({
       next: (registros) => {
         this.registros.set(registros);
@@ -158,6 +193,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   private atualizarRelogio(): void {
     const agora = new Date();
+    this.agora.set(agora.getTime());
     this.horaAtual.set(agora.toLocaleTimeString('pt-BR'));
     this.dataAtual.set(
       agora.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
