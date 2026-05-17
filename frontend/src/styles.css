@@ -1,3 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+/* Dark mode por classe (Tailwind 4). `.dark` aplicado em <html> pelo ThemeService. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+  body {
+    @apply bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+  }
+}

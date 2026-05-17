@@ -7,13 +7,16 @@ import { AuthService } from '../../core/auth/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gray-100">
-      <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-gray-100 to-blue-100 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 px-4">
+      <div class="bg-white/90 dark:bg-gray-900/80 backdrop-blur border border-gray-200 dark:border-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
         @if (erro()) {
-          <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">{{ erro() }}</div>
-          <a routerLink="/login" class="text-blue-600 hover:underline">Voltar ao login</a>
+          <div class="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-4">{{ erro() }}</div>
+          <a routerLink="/login" class="text-blue-600 dark:text-blue-400 hover:underline">Voltar ao login</a>
         } @else {
-          <p class="text-gray-600">Autenticando com Discord...</p>
+          <div class="flex flex-col items-center gap-3">
+            <div class="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-gray-600 dark:text-gray-300">Autenticando com Discord...</p>
+          </div>
         }
       </div>
     </div>

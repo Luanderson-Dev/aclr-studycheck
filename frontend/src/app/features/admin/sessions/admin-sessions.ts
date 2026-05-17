@@ -11,14 +11,14 @@ import { UsuarioResponse } from '../../../core/models/usuario.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, DatePipe],
   template: `
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Registros de Sessões</h1>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Registros de Sessões</h1>
 
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow p-6 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuário</label>
           <select [(ngModel)]="usuarioSelecionado"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option [ngValue]="null">Selecione...</option>
             @for (u of usuarios(); track u.id) {
               <option [ngValue]="u.id">{{ u.nome }}</option>
@@ -26,14 +26,14 @@ import { UsuarioResponse } from '../../../core/models/usuario.model';
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Data Início</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Início</label>
           <input type="date" [(ngModel)]="dataInicio"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Data Fim</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fim</label>
           <input type="date" [(ngModel)]="dataFim"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
         <button (click)="buscar()"
           [disabled]="!usuarioSelecionado || !dataInicio || !dataFim || buscando()"
@@ -44,39 +44,39 @@ import { UsuarioResponse } from '../../../core/models/usuario.model';
     </div>
 
     @if (erro()) {
-      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">{{ erro() }}</div>
+      <div class="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4 text-sm">{{ erro() }}</div>
     }
 
     @if (buscou()) {
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 class="text-lg font-semibold text-gray-700">Resultados</h2>
-          <span class="text-sm text-gray-500">{{ registros().length }} registro(s) — Total: {{ totalHoras() }}</span>
+      <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+          <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Resultados</h2>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ registros().length }} registro(s) — Total: {{ totalHoras() }}</span>
         </div>
         @if (registros().length === 0) {
-          <div class="p-6 text-center text-gray-500">Nenhum registro no período.</div>
+          <div class="p-6 text-center text-gray-500 dark:text-gray-400">Nenhum registro no período.</div>
         } @else {
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+            <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Início</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fim</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tempo</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Usuário</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Data</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Início</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Fim</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tempo</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
               @for (r of registros(); track r.id) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ r.nomeUsuario }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600">{{ r.startedAt | date:'dd/MM/yyyy' }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600">{{ r.startedAt | date:'HH:mm:ss' }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ r.nomeUsuario }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ r.startedAt | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ r.startedAt | date:'HH:mm:ss' }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                     @if (r.endedAt) { {{ r.endedAt | date:'HH:mm:ss' }} }
-                    @else { <span class="text-yellow-600 font-medium">Em aberto</span> }
+                    @else { <span class="text-yellow-600 dark:text-yellow-400 font-medium">Em aberto</span> }
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-600">
+                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                     @if (r.minutosEstudados > 0) { {{ formatarHoras(r.minutosEstudados) }} }
                     @else { — }
                   </td>

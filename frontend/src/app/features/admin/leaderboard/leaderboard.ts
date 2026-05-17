@@ -6,15 +6,15 @@ import { LeaderboardEntryResponse } from '../../../core/models/session.model';
   selector: 'app-leaderboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Leaderboard</h1>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Leaderboard</h1>
     @if (carregando()) {
-      <div class="text-center text-gray-500 py-8">Carregando...</div>
+      <div class="text-center text-gray-500 dark:text-gray-400 py-8">Carregando...</div>
     } @else if (entradas().length === 0) {
-      <div class="text-center text-gray-500 py-8">Nenhum registro encontrado.</div>
+      <div class="text-center text-gray-500 dark:text-gray-400 py-8">Nenhum registro encontrado.</div>
     } @else {
       <div class="space-y-3">
         @for (entry of entradas(); track entry.posicao) {
-          <div class="bg-white rounded-lg shadow px-5 py-4 flex items-center gap-4"
+          <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow px-5 py-4 flex items-center gap-4"
                [class.ring-2]="entry.posicao <= 3"
                [class.ring-yellow-400]="entry.posicao === 1"
                [class.ring-gray-300]="entry.posicao === 2"
@@ -29,20 +29,20 @@ import { LeaderboardEntryResponse } from '../../../core/models/session.model';
             @if (entry.avatarUrl) {
               <img [src]="entry.avatarUrl" [alt]="entry.nomeUsuario" class="w-10 h-10 rounded-full object-cover" />
             } @else {
-              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm">
+              <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold text-sm">
                 {{ entry.nomeUsuario.charAt(0).toUpperCase() }}
               </div>
             }
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-gray-800 truncate">{{ entry.nomeUsuario }}</p>
+              <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ entry.nomeUsuario }}</p>
               @if (entry.currentStreak > 0) {
-                <p class="text-xs text-orange-600 font-medium">
+                <p class="text-xs text-orange-600 dark:text-orange-400 font-medium">
                   🔥 {{ entry.currentStreak }} {{ entry.currentStreak === 1 ? 'dia' : 'dias' }} seguidos
                 </p>
               }
             </div>
             <div class="text-right">
-              <p class="font-bold text-gray-700">{{ formatarHoras(entry.totalMinutos) }}</p>
+              <p class="font-bold text-gray-700 dark:text-gray-200">{{ formatarHoras(entry.totalMinutos) }}</p>
             </div>
           </div>
         }
