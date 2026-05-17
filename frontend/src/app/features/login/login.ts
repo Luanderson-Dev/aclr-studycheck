@@ -27,9 +27,20 @@ import { ThemeToggle } from '../../core/components/theme-toggle';
               </svg>
             </div>
             <h1 class="text-3xl font-extrabold text-gray-800 dark:text-gray-50 tracking-tight">StudyCheck</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center">
-              Registre suas sessões de estudo e suba no leaderboard.
+            <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400 mt-1">
+              Estudar junto rende mais. 🚀
             </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-3 text-center leading-relaxed">
+              Entrou na call de estudos do <span class="font-semibold text-gray-700 dark:text-gray-200">AceleraDev</span>?
+              O StudyCheck conta seu tempo automaticamente, mantém sua
+              ofensiva viva e te coloca no ranking da galera.
+            </p>
+          </div>
+
+          <div class="flex justify-center gap-2 mb-7 text-xs">
+            <span class="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-medium">⏱️ Tempo automático</span>
+            <span class="px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 font-medium">🔥 Ofensiva</span>
+            <span class="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium">🏆 Ranking</span>
           </div>
 
           @if (erro()) {
@@ -50,8 +61,9 @@ import { ThemeToggle } from '../../core/components/theme-toggle';
             @if (carregando()) { Entrando... } @else { Entrar com Discord }
           </button>
 
-          <p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-6">
-            Acesso restrito a membros do servidor autorizado.
+          <p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-6 leading-relaxed">
+            Exclusivo pra quem é do <span class="font-semibold text-gray-500 dark:text-gray-400">Discord do AceleraDev</span>.
+            Bora subir nesse ranking? 💪
           </p>
         </div>
       </div>
