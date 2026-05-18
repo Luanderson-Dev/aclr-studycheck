@@ -6,16 +6,29 @@ import { AuthService } from '../../core/auth/auth.service';
   selector: 'app-discord-callback',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
+  styles: [`
+    :host { display: block; }
+    .scene {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 84% 88%, var(--app-accent-soft), transparent 24%),
+        var(--app-bg);
+    }
+    .spinner {
+      border: 3px solid var(--app-accent-soft);
+      border-top-color: var(--app-accent);
+    }
+  `],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-gray-100 to-blue-100 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 px-4">
-      <div class="bg-white/90 dark:bg-gray-900/80 backdrop-blur border border-gray-200 dark:border-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+    <div class="scene flex items-center justify-center px-4">
+      <div class="w-full max-w-md rounded-2xl border border-app bg-surface p-8 text-center backdrop-blur">
         @if (erro()) {
-          <div class="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-4">{{ erro() }}</div>
-          <a routerLink="/login" class="text-blue-600 dark:text-blue-400 hover:underline">Voltar ao login</a>
+          <div class="mb-5 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-200">{{ erro() }}</div>
+          <a routerLink="/login" class="font-mono text-sm text-accent transition-colors hover:text-accent">← Voltar ao login</a>
         } @else {
-          <div class="flex flex-col items-center gap-3">
-            <div class="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-gray-600 dark:text-gray-300">Autenticando com Discord...</p>
+          <div class="flex flex-col items-center gap-4">
+            <div class="spinner h-8 w-8 animate-spin rounded-full"></div>
+            <p class="font-mono text-sm text-muted">Autenticando com Discord...</p>
           </div>
         }
       </div>
