@@ -16,7 +16,6 @@ export class AuthService {
 
   readonly estaAutenticado = computed(() => !!this.accessToken());
   readonly usuarioLogado = computed(() => this.usuario());
-  readonly eAdmin = computed(() => this.usuario()?.role === 'MOD');
 
   getAccessToken(): string | null {
     return this.accessToken();

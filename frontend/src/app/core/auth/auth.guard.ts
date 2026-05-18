@@ -13,12 +13,6 @@ export const authGuard: CanActivateFn = async () => {
   return auth.estaAutenticado() ? true : router.createUrlTree(['/login']);
 };
 
-export const adminGuard: CanActivateFn = async () => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
-  await aguardarInicializacao(auth);
-  return auth.eAdmin() ? true : router.createUrlTree(['/']);
-};
 
 export const guestGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
