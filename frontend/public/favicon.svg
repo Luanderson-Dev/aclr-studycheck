@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <!-- Capelo: topo (losango) -->
+  <path d="M32 16 L57 27 L32 38 L7 27 Z" fill="#fff"/>
+  <!-- Base do capelo -->
+  <path d="M16 32 L16 42 C16 47 23 51 32 51 C41 51 48 47 48 42 L48 32 L32 39 Z" fill="#fff"/>
+  <!-- Cordão + borla -->
+  <path d="M55 26 L55 41" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="55" cy="44" r="3.5" fill="#fff"/>
+</svg>

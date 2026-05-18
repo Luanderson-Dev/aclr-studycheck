@@ -1,0 +1,69 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Light theme (default) */
+  --app-bg: #f4f6f9;
+  --app-bg-soft: rgba(13, 148, 136, 0.06);
+  --app-surface: rgba(15, 23, 42, 0.025);
+  --app-surface-2: rgba(15, 23, 42, 0.05);
+  --app-border: rgba(15, 23, 42, 0.12);
+  --app-border-soft: rgba(15, 23, 42, 0.08);
+  --app-heading: #0f172a;
+  --app-text: #334155;
+  --app-muted: #64748b;
+  --app-faint: #94a3b8;
+  --app-accent: #0d9488;
+  --app-accent-soft: rgba(13, 148, 136, 0.10);
+  --app-accent-border: rgba(13, 148, 136, 0.30);
+  --app-nav-bg: rgba(244, 246, 249, 0.78);
+}
+
+.dark {
+  --app-bg: #060809;
+  --app-bg-soft: rgba(45, 212, 191, 0.06);
+  --app-surface: rgba(255, 255, 255, 0.018);
+  --app-surface-2: rgba(255, 255, 255, 0.045);
+  --app-border: rgba(255, 255, 255, 0.07);
+  --app-border-soft: rgba(255, 255, 255, 0.045);
+  --app-heading: #ffffff;
+  --app-text: #cbd5e1;
+  --app-muted: #94a3b8;
+  --app-faint: #64748b;
+  --app-accent: #2dd4bf;
+  --app-accent-soft: rgba(45, 212, 191, 0.07);
+  --app-accent-border: rgba(45, 212, 191, 0.30);
+  --app-nav-bg: rgba(6, 8, 9, 0.72);
+}
+
+@utility bg-app { background-color: var(--app-bg); }
+@utility bg-surface { background-color: var(--app-surface); }
+@utility bg-surface-2 { background-color: var(--app-surface-2); }
+@utility bg-accent-soft { background-color: var(--app-accent-soft); }
+@utility border-app { border-color: var(--app-border); }
+@utility border-app-soft { border-color: var(--app-border-soft); }
+@utility border-accent-app { border-color: var(--app-accent-border); }
+@utility text-heading { color: var(--app-heading); }
+@utility text-app { color: var(--app-text); }
+@utility text-muted { color: var(--app-muted); }
+@utility text-faint { color: var(--app-faint); }
+@utility text-accent { color: var(--app-accent); }
+@utility bg-accent { background-color: var(--app-accent); }
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--app-bg);
+    color: var(--app-text);
+    margin: 0;
+    overflow-x: hidden;
+  }
+}
