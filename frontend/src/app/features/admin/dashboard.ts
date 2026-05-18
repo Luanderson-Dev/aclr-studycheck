@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { DatePipe, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { SessionService } from '../../core/services/session.service';
 import { StreakResponse, StudySessionResponse } from '../../core/models/session.model';
@@ -8,94 +7,124 @@ import { StreakResponse, StudySessionResponse } from '../../core/models/session.
 @Component({
   selector: 'app-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe],
+  styles: [`
+    :host { display: block; }
+
+    .card {
+      border: 1px solid var(--app-border);
+      background: var(--app-surface);
+      transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      border-color: var(--app-accent-border);
+      background: var(--app-accent-soft);
+    }
+
+    .session-card {
+      border: 1px solid var(--app-accent-border);
+      background:
+        radial-gradient(circle at 90% 0%, var(--app-accent-soft), transparent 60%),
+        var(--app-accent-soft);
+      box-shadow: inset 0 1px 0 var(--app-accent-soft);
+    }
+
+    .recent-row { transition: background-color 150ms ease; }
+    .recent-row:hover { background: var(--app-surface); }
+  `],
   template: `
-    <div class="flex flex-col lg:flex-row gap-6">
-      <div class="flex-1 min-w-0">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Minhas Sessões</h1>
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow overflow-hidden">
-          @if (carregando()) {
-            <div class="p-6 text-center text-gray-500 dark:text-gray-400">Carregando...</div>
-          } @else if (registros().length === 0) {
-            <div class="p-6 text-center text-gray-500 dark:text-gray-400">Nenhuma sessão registrada.</div>
-          } @else {
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-              <thead class="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Data</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Início</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Fim</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tempo</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                @for (r of registros(); track r.id) {
-                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ r.startedAt | date:'dd/MM/yyyy' }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ r.startedAt | date:'HH:mm:ss' }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                      @if (r.endedAt) { {{ r.endedAt | date:'HH:mm:ss' }} }
-                      @else { <span class="text-yellow-600 dark:text-yellow-400 font-medium">Em aberto</span> }
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                      @if (r.minutosEstudados > 0) { {{ formatarHoras(r.minutosEstudados) }} }
-                      @else { — }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
-        </div>
-        @if (auth.eAdmin()) {
-          <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mt-8 mb-4">Administração</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <a routerLink="/sessions" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow p-5 hover:shadow-md transition-shadow block">
-              <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Registros de Sessões</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Consultar sessões de todos os usuários.</p>
-            </a>
-            <a routerLink="/usuarios" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow p-5 hover:shadow-md transition-shadow block">
-              <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Gerenciar Usuários</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Visualizar usuários do sistema.</p>
-            </a>
-          </div>
-        }
+    <header class="mb-8">
+      <p class="font-mono text-xs uppercase tracking-[0.2em] text-muted">{{ dataAtual() }} · {{ horaAtual() }}</p>
+    </header>
+
+    <div class="mb-6 grid gap-5 lg:grid-cols-[1fr_22rem]">
+      <div class="self-end">
+        <h1 class="text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">Olá, {{ auth.usuarioLogado()?.nome }}.</h1>
+        <p class="mt-3 text-[15px] leading-7 text-muted">
+          Sessões são registradas automaticamente ao entrar/sair de canais de voz no Discord.
+        </p>
       </div>
-      <div class="lg:w-80 flex-shrink-0">
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow p-6 text-center lg:sticky lg:top-6">
-          <p class="text-4xl font-mono font-bold text-gray-800 dark:text-gray-100 mb-1">{{ horaAtual() }}</p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ dataAtual() }}</p>
-          @if (sessaoAberta()) {
-            <div class="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-3 py-2 rounded mb-4 text-sm">
-              <div class="text-2xl font-mono font-bold">{{ tempoSessaoAtual() }}</div>
-              <div class="text-xs text-green-600 dark:text-green-400 mt-1">
-                Sessão aberta desde {{ startedAtAberta() | date:'HH:mm:ss' }}
-              </div>
-            </div>
-          } @else {
-            <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 px-3 py-2 rounded mb-4 text-sm">
-              Nenhuma sessão aberta
-            </div>
-          }
-          <div class="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 px-3 py-2 rounded mb-4 text-sm">
-            Total: <span class="font-bold">{{ formatarHoras(totalMinutos()) }}</span>
-          </div>
-          @if (streak(); as s) {
-            <div class="bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 px-3 py-2 rounded mb-4 text-sm">
-              <div class="text-2xl font-bold">
-                {{ s.studiedToday ? '🔥' : '⚪' }} {{ s.currentStreak }}
-                <span class="text-sm font-normal">{{ s.currentStreak === 1 ? 'dia' : 'dias' }} seguidos</span>
-              </div>
-              <div class="text-xs text-orange-500 dark:text-orange-400 mt-1">Recorde: {{ s.longestStreak }} dias</div>
-            </div>
-          }
-          <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-            Sessões são registradas automaticamente ao entrar/sair de canais de voz no Discord.
-          </p>
-          <p class="text-xs text-gray-400 dark:text-gray-500 mt-4">Olá, {{ auth.usuarioLogado()?.nome }}</p>
+
+      @if (sessaoAberta()) {
+        <div class="session-card rounded-2xl p-5">
+          <span class="flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.18em] text-accent">
+            <span class="h-1.5 w-1.5 rounded-full bg-accent"></span> sessão ativa
+          </span>
+          <p class="mt-4 font-mono text-4xl font-bold tracking-tight text-heading">{{ tempoSessaoAtual() }}</p>
+          <p class="mt-2 font-mono text-xs text-muted">desde {{ startedAtAberta() | date:'HH:mm:ss' }}</p>
         </div>
+      } @else {
+        <div class="card rounded-2xl p-5">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted">sessão</span>
+          <p class="mt-4 font-mono text-2xl font-bold text-muted">nenhuma aberta</p>
+          <p class="mt-2 font-mono text-xs text-faint">entre numa call do Discord</p>
+        </div>
+      }
+    </div>
+
+    <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div class="card card-hover rounded-2xl p-5">
+        <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted">Total acumulado</p>
+        <p class="mt-3 font-mono text-2xl font-bold text-heading">{{ formatarHoras(totalMinutos()) }}</p>
+      </div>
+      <div class="card card-hover rounded-2xl p-5">
+        <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted">Ofensiva</p>
+        <p class="mt-3 font-mono text-2xl font-bold text-heading">
+          {{ streak()?.currentStreak ?? 0 }} <span class="text-sm font-normal text-muted">{{ (streak()?.currentStreak ?? 0) === 1 ? 'dia' : 'dias' }}</span>
+        </p>
+        <p class="mt-1 font-mono text-xs text-muted">
+          {{ streak()?.studiedToday ? 'estudou hoje' : 'sem foco hoje' }}
+        </p>
+      </div>
+      <div class="card card-hover rounded-2xl p-5">
+        <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted">Recorde</p>
+        <p class="mt-3 font-mono text-2xl font-bold text-heading">
+          {{ streak()?.longestStreak ?? 0 }} <span class="text-sm font-normal text-muted">dias</span>
+        </p>
       </div>
     </div>
+
+    <section class="card rounded-2xl">
+      <div class="flex items-center justify-between border-b border-app-soft px-5 py-4">
+        <h2 class="font-semibold text-heading">Minhas sessões</h2>
+        <span class="font-mono text-xs text-muted">{{ registros().length }} registro(s)</span>
+      </div>
+      @if (carregando()) {
+        <div class="p-8 text-center font-mono text-sm text-muted">Carregando...</div>
+      } @else if (registros().length === 0) {
+        <div class="p-8 text-center font-mono text-sm text-muted">Nenhuma sessão registrada.</div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[40rem]">
+            <thead>
+              <tr class="border-b border-app-soft text-left font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
+                <th class="px-5 py-3 font-medium">Data</th>
+                <th class="px-5 py-3 font-medium">Início</th>
+                <th class="px-5 py-3 font-medium">Fim</th>
+                <th class="px-5 py-3 font-medium">Tempo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of registros(); track r.id) {
+                <tr class="recent-row border-b border-app-soft last:border-0">
+                  <td class="whitespace-nowrap px-5 py-4 font-mono text-sm text-app">{{ r.startedAt | date:'dd/MM/yyyy' }}</td>
+                  <td class="whitespace-nowrap px-5 py-4 font-mono text-sm text-muted">{{ r.startedAt | date:'HH:mm:ss' }}</td>
+                  <td class="whitespace-nowrap px-5 py-4 font-mono text-sm text-muted">
+                    @if (r.endedAt) { {{ r.endedAt | date:'HH:mm:ss' }} }
+                    @else { <span class="font-medium text-accent">em aberto</span> }
+                  </td>
+                  <td class="whitespace-nowrap px-5 py-4 font-mono text-sm font-medium text-heading">
+                    @if (r.minutosEstudados > 0) { {{ formatarHoras(r.minutosEstudados) }} }
+                    @else { <span class="text-faint">—</span> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
   `,
 })
 export class Dashboard implements OnInit, OnDestroy {

@@ -1,52 +1,111 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { SessionService } from '../../../core/services/session.service';
 import { LeaderboardEntryResponse } from '../../../core/models/session.model';
 
 @Component({
   selector: 'app-leaderboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    :host { display: block; }
+
+    .card {
+      border: 1px solid var(--app-border);
+      background: var(--app-surface);
+      transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
+    }
+    .podium:hover {
+      transform: translateY(-2px);
+      border-color: var(--app-accent-border);
+      background: var(--app-accent-soft);
+    }
+    .podium-1 { border-color: var(--app-accent-border); }
+
+    .row { transition: background-color 150ms ease; }
+    .row:hover { background: var(--app-surface); }
+  `],
   template: `
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Leaderboard</h1>
+    <header class="mb-6">
+      <p class="font-mono text-xs uppercase tracking-[0.2em] text-muted">Ranking</p>
+      <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
+        @if (entradas().length > 0) {
+          {{ entradas().length }} {{ entradas().length === 1 ? 'dev na disputa.' : 'devs na disputa.' }}
+        } @else {
+          Leaderboard
+        }
+      </h1>
+    </header>
+
     @if (carregando()) {
-      <div class="text-center text-gray-500 dark:text-gray-400 py-8">Carregando...</div>
+      <div class="card rounded-2xl p-8 text-center font-mono text-sm text-muted">Carregando...</div>
     } @else if (entradas().length === 0) {
-      <div class="text-center text-gray-500 dark:text-gray-400 py-8">Nenhum registro encontrado.</div>
+      <div class="card rounded-2xl p-8 text-center font-mono text-sm text-muted">Nenhum registro encontrado.</div>
     } @else {
-      <div class="space-y-3">
-        @for (entry of entradas(); track entry.posicao) {
-          <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow px-5 py-4 flex items-center gap-4"
-               [class.ring-2]="entry.posicao <= 3"
-               [class.ring-yellow-400]="entry.posicao === 1"
-               [class.ring-gray-300]="entry.posicao === 2"
-               [class.ring-amber-600]="entry.posicao === 3">
-            <span class="text-2xl font-bold w-10 text-center"
-                  [class.text-yellow-500]="entry.posicao === 1"
-                  [class.text-gray-400]="entry.posicao === 2"
-                  [class.text-amber-600]="entry.posicao === 3"
-                  [class.text-gray-500]="entry.posicao > 3">
-              {{ entry.posicao }}
-            </span>
-            @if (entry.avatarUrl) {
-              <img [src]="entry.avatarUrl" [alt]="entry.nomeUsuario" class="w-10 h-10 rounded-full object-cover" />
-            } @else {
-              <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold text-sm">
-                {{ entry.nomeUsuario.charAt(0).toUpperCase() }}
-              </div>
-            }
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ entry.nomeUsuario }}</p>
-              @if (entry.currentStreak > 0) {
-                <p class="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                  🔥 {{ entry.currentStreak }} {{ entry.currentStreak === 1 ? 'dia' : 'dias' }} seguidos
-                </p>
+      <div class="mb-6 grid gap-4 sm:grid-cols-3">
+        @for (d of podio(); track d.posicao) {
+          <div class="card podium rounded-2xl p-5" [class.podium-1]="d.posicao === 1">
+            <div class="flex items-start justify-between">
+              <span
+                class="flex h-7 w-7 items-center justify-center rounded-md font-mono text-sm font-bold"
+                [style.background]="d.posicao === 1 ? '#2dd4bf' : 'var(--app-surface-2)'"
+                [style.color]="d.posicao === 1 ? '#020617' : '#cbd5e1'"
+              >{{ d.posicao }}</span>
+              @if (d.currentStreak > 0) {
+                <span class="font-mono text-xs text-muted">{{ d.currentStreak }}d ofensiva</span>
               }
             </div>
-            <div class="text-right">
-              <p class="font-bold text-gray-700 dark:text-gray-200">{{ formatarHoras(entry.totalMinutos) }}</p>
+            <div class="mt-5 flex items-center gap-3">
+              @if (d.avatarUrl) {
+                <img [src]="d.avatarUrl" [alt]="d.nomeUsuario" class="h-9 w-9 rounded-full object-cover" />
+              } @else {
+                <span class="flex h-9 w-9 items-center justify-center rounded-full border border-app bg-surface-2 text-sm font-bold text-heading">
+                  {{ d.nomeUsuario.charAt(0).toUpperCase() }}
+                </span>
+              }
+              <p class="min-w-0 truncate font-semibold text-heading">{{ d.nomeUsuario }}</p>
+            </div>
+            <div class="mt-5 flex items-center justify-between border-t border-app-soft pt-4">
+              <span class="font-mono text-xs uppercase tracking-[0.16em] text-muted">Foco</span>
+              <span class="font-mono text-lg font-bold text-heading">{{ formatarHoras(d.totalMinutos) }}</span>
             </div>
           </div>
         }
       </div>
+
+      @if (resto().length > 0) {
+        <div class="card overflow-hidden rounded-2xl">
+          <div class="hidden grid-cols-[3rem_1fr_12rem_5rem] gap-4 border-b border-app-soft px-5 py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-faint sm:grid">
+            <span>#</span><span>Dev</span><span>Foco</span><span>Streak</span>
+          </div>
+          @for (r of resto(); track r.posicao) {
+            <div class="row grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 border-b border-app-soft px-5 py-4 last:border-0 sm:grid-cols-[3rem_1fr_12rem_5rem]">
+              <span class="font-mono text-sm text-muted">{{ pad(r.posicao) }}</span>
+              <div class="flex min-w-0 items-center gap-3">
+                @if (r.avatarUrl) {
+                  <img [src]="r.avatarUrl" [alt]="r.nomeUsuario" class="h-8 w-8 flex-shrink-0 rounded-full object-cover" />
+                } @else {
+                  <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-heading">
+                    {{ r.nomeUsuario.charAt(0).toUpperCase() }}
+                  </span>
+                }
+                <p class="min-w-0 truncate font-semibold text-heading">{{ r.nomeUsuario }}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="hidden h-1.5 w-24 overflow-hidden rounded-full bg-surface-2 sm:block">
+                  <div class="h-full rounded-full bg-[rgba(148,163,184,0.5)]" [style.width.%]="barraPct(r.totalMinutos)"></div>
+                </div>
+                <span class="font-mono text-sm font-bold text-heading">{{ formatarHoras(r.totalMinutos) }}</span>
+              </div>
+              <span class="hidden sm:inline">
+                @if (r.currentStreak > 0) {
+                  <span class="rounded-md border border-app px-2 py-1 font-mono text-[11px] text-muted">{{ r.currentStreak }}d</span>
+                } @else {
+                  <span class="font-mono text-xs text-faint">—</span>
+                }
+              </span>
+            </div>
+          }
+        </div>
+      }
     }
   `,
 })
@@ -54,6 +113,12 @@ export class Leaderboard implements OnInit {
   private readonly sessionService = inject(SessionService);
   readonly entradas = signal<LeaderboardEntryResponse[]>([]);
   readonly carregando = signal(true);
+
+  readonly podio = computed(() => this.entradas().slice(0, 3));
+  readonly resto = computed(() => this.entradas().slice(3));
+  private readonly maxMinutos = computed(() =>
+    this.entradas().reduce((m, e) => Math.max(m, e.totalMinutos), 0),
+  );
 
   ngOnInit(): void {
     this.sessionService.listarLeaderboard().subscribe({
@@ -63,6 +128,15 @@ export class Leaderboard implements OnInit {
       },
       error: () => this.carregando.set(false),
     });
+  }
+
+  barraPct(minutos: number): number {
+    const max = this.maxMinutos();
+    return max > 0 ? Math.round((minutos / max) * 100) : 0;
+  }
+
+  pad(n: number): string {
+    return String(n).padStart(2, '0');
   }
 
   formatarHoras(minutos: number): string {
