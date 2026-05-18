@@ -27,11 +27,9 @@ export class ThemeService {
   }
 
   private estadoInicial(): Theme {
-    if (!this.isBrowser) return 'light';
+    if (!this.isBrowser) return 'dark';
     const salvo = localStorage.getItem(STORAGE_KEY);
     if (salvo === 'light' || salvo === 'dark') return salvo;
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
+    return 'dark';
   }
 }
