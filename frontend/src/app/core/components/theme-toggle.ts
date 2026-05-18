@@ -11,7 +11,7 @@ import { ThemeService } from '../services/theme.service';
       [attr.aria-label]="theme.theme() === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'"
       [attr.aria-pressed]="theme.theme() === 'dark'"
       title="Alternar tema"
-      class="inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+      class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-700"
     >
       @if (theme.theme() === 'dark') {
         <!-- Sol -->

@@ -3,6 +3,23 @@ import { adminGuard, authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
+    path: 'preview',
+    loadComponent: () =>
+      import('./features/preview/preview-layout').then((m) => m.PreviewLayout),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/preview/preview-dashboard').then((m) => m.PreviewDashboard),
+      },
+      {
+        path: 'leaderboard',
+        loadComponent: () =>
+          import('./features/preview/preview-leaderboard').then((m) => m.PreviewLeaderboard),
+      },
+    ],
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('./features/login/login').then((m) => m.Login),

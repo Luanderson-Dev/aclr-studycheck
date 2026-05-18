@@ -49,41 +49,43 @@ import { UsuarioResponse } from '../../../core/models/usuario.model';
 
     @if (buscou()) {
       <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
           <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Resultados</h2>
           <span class="text-sm text-gray-500 dark:text-gray-400">{{ registros().length }} registro(s) — Total: {{ totalHoras() }}</span>
         </div>
         @if (registros().length === 0) {
           <div class="p-6 text-center text-gray-500 dark:text-gray-400">Nenhum registro no período.</div>
         } @else {
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-            <thead class="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Usuário</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Data</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Início</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Fim</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tempo</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-              @for (r of registros(); track r.id) {
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ r.nomeUsuario }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ r.startedAt | date:'dd/MM/yyyy' }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ r.startedAt | date:'HH:mm:ss' }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                    @if (r.endedAt) { {{ r.endedAt | date:'HH:mm:ss' }} }
-                    @else { <span class="text-yellow-600 dark:text-yellow-400 font-medium">Em aberto</span> }
-                  </td>
-                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                    @if (r.minutosEstudados > 0) { {{ formatarHoras(r.minutosEstudados) }} }
-                    @else { — }
-                  </td>
+          <div class="overflow-x-auto">
+            <table class="min-w-[52rem] w-full divide-y divide-gray-200 dark:divide-gray-800">
+              <thead class="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Usuário</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Data</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Início</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Fim</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tempo</th>
                 </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+                @for (r of registros(); track r.id) {
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap">{{ r.nomeUsuario }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ r.startedAt | date:'dd/MM/yyyy' }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ r.startedAt | date:'HH:mm:ss' }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                      @if (r.endedAt) { {{ r.endedAt | date:'HH:mm:ss' }} }
+                      @else { <span class="text-yellow-600 dark:text-yellow-400 font-medium">Em aberto</span> }
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                      @if (r.minutosEstudados > 0) { {{ formatarHoras(r.minutosEstudados) }} }
+                      @else { — }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       </div>
     }
