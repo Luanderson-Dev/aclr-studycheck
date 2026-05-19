@@ -32,6 +32,25 @@ import { StreakResponse, StudySessionResponse } from '../../core/models/session.
 
     .recent-row { transition: background-color 150ms ease; }
     .recent-row:hover { background: var(--app-surface); }
+
+    .hm-grid { display: flex; gap: 3px; }
+    .hm-col { display: flex; flex-direction: column; gap: 3px; }
+    .hm-cell {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: var(--app-surface-2);
+      transition: transform 120ms ease, outline-color 120ms ease;
+      outline: 1px solid transparent;
+    }
+    .hm-cell.lvl1 { background: color-mix(in srgb, var(--app-accent) 26%, transparent); }
+    .hm-cell.lvl2 { background: color-mix(in srgb, var(--app-accent) 48%, transparent); }
+    .hm-cell.lvl3 { background: color-mix(in srgb, var(--app-accent) 72%, transparent); }
+    .hm-cell.lvl4 { background: var(--app-accent); }
+    .hm-cell.has-data:hover { transform: scale(1.25); outline-color: var(--app-accent); }
+    .hm-cell.empty { background: transparent; }
+    .hm-scroll { scrollbar-width: thin; }
+    .yr-btn { transition: background-color 140ms ease, color 140ms ease; }
   `],
   template: `
     <header class="mb-8">
@@ -84,6 +103,80 @@ import { StreakResponse, StudySessionResponse } from '../../core/models/session.
         </p>
       </div>
     </div>
+
+    <section class="card mb-6 rounded-2xl p-5">
+      <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="font-semibold text-heading">Ofensiva de estudo</h2>
+          <p class="mt-1 font-mono text-xs text-muted">
+            {{ calendario().diasAtivos }} dias com foco em {{ anoSelecionado() }} ·
+            {{ formatarHoras(calendario().totalAno) }}
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-1 rounded-lg border border-app-soft p-1 text-xs">
+          @for (a of anosDisponiveis(); track a) {
+            <button
+              type="button"
+              (click)="anoSelecionado.set(a)"
+              class="yr-btn rounded-md px-2.5 py-1 font-mono"
+              [style.background]="anoSelecionado() === a ? 'var(--app-accent-soft)' : 'transparent'"
+              [style.color]="anoSelecionado() === a ? 'var(--app-accent)' : 'var(--app-muted)'"
+            >{{ a }}</button>
+          }
+        </div>
+      </div>
+
+      <div class="hm-scroll overflow-x-auto pb-1">
+        <div class="inline-flex flex-col gap-1.5">
+          <div class="flex pl-[1.875rem] font-mono text-[10px] text-faint">
+            @for (lbl of calendario().mesesCols; track $index) {
+              <span class="block overflow-visible whitespace-nowrap" style="width:15px">{{ lbl }}</span>
+            }
+          </div>
+          <div class="flex gap-2">
+            <div class="flex flex-col gap-[3px] pt-[1px] font-mono text-[10px] text-faint">
+              <span style="height:12px"></span>
+              <span style="height:12px">seg</span>
+              <span style="height:12px"></span>
+              <span style="height:12px">qua</span>
+              <span style="height:12px"></span>
+              <span style="height:12px">sex</span>
+              <span style="height:12px"></span>
+            </div>
+            <div class="hm-grid">
+              @for (sem of calendario().semanas; track $index) {
+                <div class="hm-col">
+                  @for (cel of sem; track $index) {
+                    @if (cel) {
+                      <span
+                        class="hm-cell"
+                        [class.lvl1]="cel.nivel === 1"
+                        [class.lvl2]="cel.nivel === 2"
+                        [class.lvl3]="cel.nivel === 3"
+                        [class.lvl4]="cel.nivel === 4"
+                        [class.has-data]="cel.minutos > 0"
+                        [title]="cel.titulo"
+                      ></span>
+                    } @else {
+                      <span class="hm-cell empty"></span>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-1.5 pt-1 font-mono text-[10px] text-faint">
+            <span>menos</span>
+            <span class="hm-cell"></span>
+            <span class="hm-cell lvl1"></span>
+            <span class="hm-cell lvl2"></span>
+            <span class="hm-cell lvl3"></span>
+            <span class="hm-cell lvl4"></span>
+            <span>mais</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section class="card rounded-2xl">
       <div class="flex items-center justify-between border-b border-app-soft px-5 py-4">
@@ -163,6 +256,103 @@ export class Dashboard implements OnInit, OnDestroy {
       this.registros().reduce((acc, r) => acc + r.minutosEstudados, 0) +
       Math.floor(this.segundosSessaoAtual() / 60),
   );
+
+  readonly anoSelecionado = signal(new Date().getFullYear());
+
+  private readonly mapaDias = computed(() => {
+    const mapa = new Map<string, number>();
+    for (const r of this.registros()) {
+      if (!r.startedAt || r.minutosEstudados <= 0) continue;
+      const d = new Date(r.startedAt);
+      const chave = this.chaveData(d);
+      mapa.set(chave, (mapa.get(chave) ?? 0) + r.minutosEstudados);
+    }
+    return mapa;
+  });
+
+  readonly anosDisponiveis = computed(() => {
+    const anos = new Set<number>([new Date().getFullYear()]);
+    for (const r of this.registros()) {
+      if (r.startedAt) anos.add(new Date(r.startedAt).getFullYear());
+    }
+    return [...anos].sort((a, b) => b - a);
+  });
+
+  readonly calendario = computed(() => {
+    const ano = this.anoSelecionado();
+    const mapa = this.mapaDias();
+    const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+    const semanas: ({ minutos: number; nivel: number; titulo: string } | null)[][] = [];
+    const mesesCols: string[] = [];
+    let coluna: ({ minutos: number; nivel: number; titulo: string } | null)[] = [];
+
+    const inicio = new Date(ano, 0, 1);
+    const fim = new Date(ano, 11, 31);
+    let totalAno = 0;
+    let diasAtivos = 0;
+    let mesAnterior = -1;
+
+    // preenche dias vazios antes de 1º jan dentro da primeira semana (dom..sáb)
+    for (let i = 0; i < inicio.getDay(); i++) coluna.push(null);
+
+    for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
+      const chave = this.chaveData(d);
+      const min = mapa.get(chave) ?? 0;
+      if (min > 0) {
+        totalAno += min;
+        diasAtivos++;
+      }
+      const dataBr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${ano}`;
+      coluna.push({
+        minutos: min,
+        nivel: this.nivelHeatmap(min),
+        titulo: min > 0 ? `${dataBr} · ${this.formatarHoras(min)}` : `${dataBr} · sem foco`,
+      });
+
+      if (d.getDay() === 6) {
+        semanas.push(coluna);
+        coluna = [];
+      }
+    }
+    if (coluna.length > 0) {
+      while (coluna.length < 7) coluna.push(null);
+      semanas.push(coluna);
+    }
+
+    // rótulo de mês na 1ª semana em que o mês muda
+    for (let i = 0; i < semanas.length; i++) {
+      const primeira = this.primeiraDataDaSemana(i, ano);
+      if (primeira && primeira.getMonth() !== mesAnterior) {
+        mesesCols[i] = meses[primeira.getMonth()];
+        mesAnterior = primeira.getMonth();
+      } else {
+        mesesCols[i] = '';
+      }
+    }
+
+    return { semanas, mesesCols, totalAno, diasAtivos };
+  });
+
+  private chaveData(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  private nivelHeatmap(min: number): number {
+    if (min <= 0) return 0;
+    if (min < 30) return 1;
+    if (min < 60) return 2;
+    if (min < 120) return 3;
+    return 4;
+  }
+
+  private primeiraDataDaSemana(coluna: number, ano: number): Date | null {
+    const inicio = new Date(ano, 0, 1);
+    const primeiroDiaCol = coluna * 7 - inicio.getDay();
+    if (primeiroDiaCol < 0) return new Date(ano, 0, 1);
+    const d = new Date(ano, 0, 1 + primeiroDiaCol);
+    return d.getFullYear() === ano ? d : null;
+  }
 
   private intervalo: ReturnType<typeof setInterval> | null = null;
   private pollIntervalo: ReturnType<typeof setInterval> | null = null;
