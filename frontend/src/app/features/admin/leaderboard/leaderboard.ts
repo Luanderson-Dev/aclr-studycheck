@@ -177,10 +177,12 @@ export class Leaderboard implements OnInit {
 
   private buildPeriodos(): Periodo[] {
     const mesesPt = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const inicio = new Date(2026, 4, 1); // Maio/2026
     const now = new Date();
+    const atual = new Date(now.getFullYear(), now.getMonth(), 1);
     const periodos: Periodo[] = [];
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    // Mais recente primeiro; do mês atual até Maio/2026 (não anterior ao início).
+    for (let d = new Date(atual); d >= inicio; d.setMonth(d.getMonth() - 1)) {
       periodos.push({
         ano: d.getFullYear(),
         mes: d.getMonth() + 1,
