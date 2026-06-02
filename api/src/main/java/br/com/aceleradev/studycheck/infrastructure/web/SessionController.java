@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -78,9 +79,15 @@ public class SessionController {
     }
 
     @GetMapping("/leaderboard")
-    public List<LeaderboardEntryResponse> leaderboard() {
+    public List<LeaderboardEntryResponse> leaderboard(
+            @RequestParam(required = false) Integer ano,
+            @RequestParam(required = false) Integer mes
+    ) {
+        YearMonth periodo = (ano != null && mes != null) ? YearMonth.of(ano, mes) : YearMonth.now();
+        LocalDateTime inicio = periodo.atDay(1).atStartOfDay();
+        LocalDateTime fim = periodo.plusMonths(1).atDay(1).atStartOfDay();
         AtomicInteger pos = new AtomicInteger(1);
-        return springSessionRepository.findLeaderboard().stream()
+        return springSessionRepository.findLeaderboardByPeriod(inicio, fim).stream()
                 .map(p -> new LeaderboardEntryResponse(
                         pos.getAndIncrement(), p.getNomeUsuario(), p.getAvatarUrl(), p.getTotalMinutos(),
                         sessionUseCase.calcularStreak(p.getUsuarioId()).currentStreak()

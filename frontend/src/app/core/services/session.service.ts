@@ -20,8 +20,11 @@ export class SessionService {
     return this.http.get<StudySessionResponse[]>(`${this.apiUrl}/minhas`);
   }
 
-  listarLeaderboard(): Observable<LeaderboardEntryResponse[]> {
-    return this.http.get<LeaderboardEntryResponse[]>(`${this.apiUrl}/leaderboard`);
+  listarLeaderboard(ano?: number, mes?: number): Observable<LeaderboardEntryResponse[]> {
+    let params = new HttpParams();
+    if (ano !== undefined) params = params.set('ano', ano);
+    if (mes !== undefined) params = params.set('mes', mes);
+    return this.http.get<LeaderboardEntryResponse[]>(`${this.apiUrl}/leaderboard`, { params });
   }
 
   listarAdmin(usuarioId: number, dataInicio: string, dataFim: string): Observable<StudySessionResponse[]> {

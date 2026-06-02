@@ -2,6 +2,12 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { SessionService } from '../../../core/services/session.service';
 import { LeaderboardEntryResponse } from '../../../core/models/session.model';
 
+interface Periodo {
+  ano: number;
+  mes: number;
+  label: string;
+}
+
 @Component({
   selector: 'app-leaderboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,23 +28,43 @@ import { LeaderboardEntryResponse } from '../../../core/models/session.model';
 
     .row { transition: background-color 150ms ease; }
     .row:hover { background: var(--app-surface); }
+
+    select {
+      background: var(--app-surface);
+      border: 1px solid var(--app-border);
+      color: var(--app-text);
+      border-radius: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+      font-family: monospace;
+      cursor: pointer;
+      outline: none;
+    }
+    select:focus { border-color: var(--app-accent-border); }
   `],
   template: `
-    <header class="mb-6">
-      <p class="font-mono text-xs uppercase tracking-[0.2em] text-muted">Ranking</p>
-      <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
-        @if (entradas().length > 0) {
-          {{ entradas().length }} {{ entradas().length === 1 ? 'dev na disputa.' : 'devs na disputa.' }}
-        } @else {
-          Leaderboard
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.2em] text-muted">Ranking</p>
+        <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
+          @if (entradas().length > 0) {
+            {{ entradas().length }} {{ entradas().length === 1 ? 'dev na disputa.' : 'devs na disputa.' }}
+          } @else {
+            Leaderboard
+          }
+        </h1>
+      </div>
+      <select [value]="periodoSelecionado().mes + '-' + periodoSelecionado().ano" (change)="onPeriodoChange($event)">
+        @for (p of periodos; track p.mes + '-' + p.ano) {
+          <option [value]="p.mes + '-' + p.ano">{{ p.label }}</option>
         }
-      </h1>
+      </select>
     </header>
 
     @if (carregando()) {
       <div class="card rounded-2xl p-8 text-center font-mono text-sm text-muted">Carregando...</div>
     } @else if (entradas().length === 0) {
-      <div class="card rounded-2xl p-8 text-center font-mono text-sm text-muted">Nenhum registro encontrado.</div>
+      <div class="card rounded-2xl p-8 text-center font-mono text-sm text-muted">Nenhum registro em {{ periodoSelecionado().label }}.</div>
     } @else {
       <div class="mb-6 grid gap-4 sm:grid-cols-3">
         @for (d of podio(); track d.posicao) {
@@ -120,14 +146,48 @@ export class Leaderboard implements OnInit {
     this.entradas().reduce((m, e) => Math.max(m, e.totalMinutos), 0),
   );
 
+  readonly periodos: Periodo[] = this.buildPeriodos();
+  readonly periodoSelecionado = signal<Periodo>(this.periodos[0]);
+
   ngOnInit(): void {
-    this.sessionService.listarLeaderboard().subscribe({
+    this.carregarLeaderboard();
+  }
+
+  onPeriodoChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    const [mesStr, anoStr] = value.split('-');
+    const encontrado = this.periodos.find(p => p.mes === +mesStr && p.ano === +anoStr);
+    if (encontrado) {
+      this.periodoSelecionado.set(encontrado);
+      this.carregarLeaderboard();
+    }
+  }
+
+  private carregarLeaderboard(): void {
+    this.carregando.set(true);
+    const { ano, mes } = this.periodoSelecionado();
+    this.sessionService.listarLeaderboard(ano, mes).subscribe({
       next: (data) => {
         this.entradas.set(data);
         this.carregando.set(false);
       },
       error: () => this.carregando.set(false),
     });
+  }
+
+  private buildPeriodos(): Periodo[] {
+    const mesesPt = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const now = new Date();
+    const periodos: Periodo[] = [];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      periodos.push({
+        ano: d.getFullYear(),
+        mes: d.getMonth() + 1,
+        label: `${mesesPt[d.getMonth()]} ${d.getFullYear()}`,
+      });
+    }
+    return periodos;
   }
 
   barraPct(minutos: number): number {
