@@ -124,7 +124,7 @@ services:
     environment:
       NODE_ENV: production
       API_PROXY_TARGET: http://api:8080
-      NG_ALLOWED_HOSTS: localhost,localhost:${FRONTEND_PORT:-4200},127.0.0.1
+      NG_ALLOWED_HOSTS: ${NG_ALLOWED_HOSTS:-localhost,localhost:4200,127.0.0.1}
     ports:
       - "${FRONTEND_PORT:-4200}:4000"
     networks:
