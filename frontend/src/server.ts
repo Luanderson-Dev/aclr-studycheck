@@ -13,6 +13,8 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+app.set('trust proxy', true);
+
 /**
  * Proxy das chamadas de API/auth para o backend Spring quando rodando
  * em container (mesma origem para o browser → resolve cookie + CORS).
